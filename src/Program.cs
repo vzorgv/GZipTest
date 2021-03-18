@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace GZipTest
+﻿namespace GZipTest
 {
+    using System;
+
     class Program
     {
         static void Main(string[] args)
