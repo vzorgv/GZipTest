@@ -1,11 +1,14 @@
 ﻿namespace GZipTest
 {
-    internal class StreamSplitter : IAtomicEnumerator<StreamWindow>
+    /// <summary>
+    /// Implements enumerator on the stream
+    /// </summary>
+    internal class StreamEnumerator : IAtomicEnumerator<StreamWindow>
     {
         private readonly IStreamWindowMovingStrategy _movingStrategy;
         private readonly object _syncObject = new object();
 
-        public StreamSplitter(IStreamWindowMovingStrategy movingStrategy)
+        public StreamEnumerator(IStreamWindowMovingStrategy movingStrategy)
         {
             _movingStrategy = movingStrategy;
         }
