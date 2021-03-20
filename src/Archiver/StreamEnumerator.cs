@@ -15,6 +15,7 @@
 
         public bool TryMoveNext(out StreamWindow current)
         {
+            //TODO: try to use non blocking
             lock (_syncObject)
             {
                 bool hasNext = _movingStrategy.CanBeMoved();
