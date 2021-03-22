@@ -3,9 +3,8 @@
     using GZipTest.Metadata;
     using System;
     using System.IO;
-    using System.IO.Compression;
-    using System.Text;
 
+    //TODO:  construct tasks and task manager using factory
     public class BlockArchiver
     {
         public void Compress(string fileNameToCompress, string compressedFileName, int blockSizeInBytes)
@@ -58,54 +57,9 @@
 
         public void Decompress(string compressedFileName, string decompressedFileName)
         {
-            var generator = DecompressMetadata(compressedFileName);
-
-            using var compressedFileStream = new FileStream(compressedFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var decompressedFileStream = new FileStream(decompressedFileName, FileMode.Create, FileAccess.Write);
-
-            BlockMetadata block = null;
-
-            while (generator.TryGetNext(0, out block))
-            {
-                compressedFileStream.Seek(block.CompressedPosition, SeekOrigin.Begin);
-                var decompressedData = DecompressBlock(compressedFileStream, block);
-
-                decompressedFileStream.Seek(block.OriginalPosition, SeekOrigin.Begin);
-                var x = Encoding.UTF8.GetString(decompressedData);
-                decompressedFileStream.Write(decompressedData, 0, decompressedData.Length);
-            }
-        }
-
-        private IBlockGenerator<BlockMetadata> DecompressMetadata(string compressedFileName)
-        {
-            using var compressedFileStream = new FileStream(compressedFileName, FileMode.Open, FileAccess.Read);
-            byte[] metadataPositionBytes = new byte[sizeof(long)];
-
-            compressedFileStream.Read(metadataPositionBytes, 0, metadataPositionBytes.Length);
-            var metadataPosition = BitConverter.ToInt64(metadataPositionBytes);
-
-            compressedFileStream.Seek(metadataPosition, SeekOrigin.Begin);
-
-            using var decompressedMemoryStream = new MemoryStream();
-            using var decompressionStream = new GZipStream(compressedFileStream, CompressionMode.Decompress);
-            decompressionStream.CopyTo(decompressedMemoryStream);
-
-            decompressedMemoryStream.Position = 0;
-
-            return new BlockMetadataGenerator(decompressedMemoryStream);
-        }
-
-        private byte[] DecompressBlock(Stream compressedFileStream, BlockMetadata block)
-        {
-            var compressedBuffer = new byte[block.SizeInBytes];
-            compressedFileStream.Read(compressedBuffer, 0, compressedBuffer.Length);
-            var compressedStream = new MemoryStream(compressedBuffer);
-
-            using var decompressedMemoryStream = new MemoryStream();
-            using var decompressionStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-            decompressionStream.CopyTo(decompressedMemoryStream);
-
-            return decompressedMemoryStream.ToArray();
+            var generator = Utils.DecompressMetadata(compressedFileName);
+            var decompressTask = new DecompressTask(compressedFileName, decompressedFileName, generator);
+            decompressTask.Run();
         }
     }
 }

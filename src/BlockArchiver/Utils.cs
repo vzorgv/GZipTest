@@ -43,5 +43,37 @@
             outputStream.Seek(outputStream.Length, SeekOrigin.Begin);
             memStream.CopyTo(zipStream);
         }
+
+        public static IBlockGenerator<BlockMetadata> DecompressMetadata(string compressedFileName)
+        {
+            using var compressedFileStream = new FileStream(compressedFileName, FileMode.Open, FileAccess.Read);
+            byte[] metadataPositionBytes = new byte[sizeof(long)];
+
+            compressedFileStream.Read(metadataPositionBytes, 0, metadataPositionBytes.Length);
+            var metadataPosition = BitConverter.ToInt64(metadataPositionBytes);
+
+            compressedFileStream.Seek(metadataPosition, SeekOrigin.Begin);
+
+            using var decompressedMemoryStream = new MemoryStream();
+            using var decompressionStream = new GZipStream(compressedFileStream, CompressionMode.Decompress);
+            decompressionStream.CopyTo(decompressedMemoryStream);
+
+            decompressedMemoryStream.Position = 0;
+
+            return new BlockMetadataGenerator(decompressedMemoryStream);
+        }
+
+        public static byte[] DecompressBlock(Stream compressedFileStream, BlockMetadata block)
+        {
+            var compressedBuffer = new byte[block.SizeInBytes];
+            compressedFileStream.Read(compressedBuffer, 0, compressedBuffer.Length);
+            var compressedStream = new MemoryStream(compressedBuffer);
+
+            using var decompressedMemoryStream = new MemoryStream();
+            using var decompressionStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+            decompressionStream.CopyTo(decompressedMemoryStream);
+
+            return decompressedMemoryStream.ToArray();
+        }
     }
 }
