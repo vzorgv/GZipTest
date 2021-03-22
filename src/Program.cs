@@ -1,5 +1,6 @@
 ﻿namespace GZipTest
 {
+    using GZipTest.Archiver;
     using System;
     using System.Diagnostics;
 

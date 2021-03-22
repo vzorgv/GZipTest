@@ -1,4 +1,4 @@
-﻿namespace GZipTest
+﻿namespace GZipTest.TaskManagement
 {
     using System;
 

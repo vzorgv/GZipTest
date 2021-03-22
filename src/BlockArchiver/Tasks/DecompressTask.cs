@@ -1,6 +1,8 @@
-﻿namespace GZipTest
+﻿namespace GZipTest.Tasks
 {
+    using GZipTest.BlockGenerators;
     using GZipTest.Metadata;
+    using GZipTest.TaskManagement;
     using System.IO;
 
     internal sealed class DecompressTask : IRunnable

@@ -1,4 +1,4 @@
-﻿namespace GZipTest
+﻿namespace GZipTest.BlockGenerators
 {
     /// <summary>
     /// Supports block generation over a collection

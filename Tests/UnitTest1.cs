@@ -1,4 +1,5 @@
 using GZipTest;
+using GZipTest.Archiver;
 using NUnit.Framework;
 
 namespace Tests

@@ -1,5 +1,6 @@
 ﻿namespace GZipTest
 {
+    using GZipTest.BlockGenerators;
     using GZipTest.Metadata;
     using System;
     using System.IO;

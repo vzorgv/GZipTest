@@ -1,6 +1,9 @@
-﻿namespace GZipTest
+﻿namespace GZipTest.Archiver
 {
+    using GZipTest.BlockGenerators;
     using GZipTest.Metadata;
+    using GZipTest.TaskManagement;
+    using GZipTest.Tasks;
     using System;
     using System.IO;
 

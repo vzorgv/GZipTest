@@ -1,4 +1,4 @@
-﻿namespace GZipTest
+﻿namespace GZipTest.BlockGenerators
 {
     internal sealed class StreamPositionGenerator : IBlockGenerator<long>
     {

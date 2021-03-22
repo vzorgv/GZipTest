@@ -1,4 +1,4 @@
-﻿namespace GZipTest
+﻿namespace GZipTest.BlockGenerators
 {
     using GZipTest.Metadata;
     using System.Collections.Generic;
