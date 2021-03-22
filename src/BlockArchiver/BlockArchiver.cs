@@ -24,7 +24,7 @@
 
                 Utils.CreateCompressedFile(compressedFileName);
 
-                threadManager.Run(compressTask);
+                threadManager.RunInParallel(compressTask);
                 threadManager.WaitAll();
 
                 Utils.WriteMetadata(compressedFileName, fileMetadata);

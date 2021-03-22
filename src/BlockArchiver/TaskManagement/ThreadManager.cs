@@ -13,7 +13,7 @@
             _threadCountCalculationStrategy = threadCountCalculationStrategy;
         }
 
-        public void Run(IRunnable runnable)
+        public void RunInParallel(IRunnable runnable)
         {
             var threadCount = _threadCountCalculationStrategy.GetThreadCount();
 
