@@ -1,16 +1,17 @@
 ﻿namespace GZipTest
 {
     /// <summary>
-    /// Supports a atomic iteration over a generic collection
+    /// Supports block generation over a collection
     /// </summary>
-    /// <typeparam name="T">The type of objects to enumerate</typeparam>
-    internal interface IAtomicEnumerator<T>
+    /// <typeparam name="T">The type of block to generate</typeparam>
+    internal interface IBlockGenerator<T>
     {
         /// <summary>
         /// Advances the enumerator to the next element of the collection
         /// </summary>
+        /// <param name="blockSize">The requested size of block</param>
         /// <param name="current">The current element of collection</param>
         /// <returns>True if the next element exist in collection; otherwise False</returns>
-        bool TryMoveNext(out T current);
+        bool TryGetNext(int blockSize, out T current);
     }
 }
