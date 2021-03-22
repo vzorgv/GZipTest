@@ -6,8 +6,9 @@
 
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            //TODO: parse args
             const int OneMB = 1048576;
 
             Stopwatch stopWatch = new Stopwatch();
@@ -26,6 +27,9 @@
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10);
             Console.WriteLine("Compress duration " + elapsedTime);
+
+            //TODO: implement return result
+            return 0;
         }
     }
 }

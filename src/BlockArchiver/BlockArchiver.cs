@@ -17,7 +17,6 @@
             try
             {
                 sourceFileStream = new FileStream(fileNameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
-
                 var fileMetadata = new CompressedFileMetadata();
 
                 var compressTask = GetCompressTask(sourceFileStream, fileNameToCompress, compressedFileName, fileMetadata);
