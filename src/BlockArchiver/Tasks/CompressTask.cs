@@ -5,19 +5,20 @@
     using GZipTest.TaskManagement;
     using System;
     using System.IO;
+    using System.Threading;
 
     internal sealed class CompressTask : IRunnable
     {
-        private readonly StreamPositionGenerator _inputStreamPositionGenerator;
-        private readonly StreamPositionGenerator _outputStreamPositionGenerator;
+        private readonly FixedSizeBlockGenerator _inputStreamPositionGenerator;
         private readonly CompressedFileMetadata _fileMetadata;
         private readonly string _filenameToCompress;
         private readonly string _compressedFilename;
 
-        public CompressTask(string filenameToCompress, string compressedFilename, StreamPositionGenerator inputStreamPositionGenerator, StreamPositionGenerator outputStreamPositionGenerator, CompressedFileMetadata fileMetadata)
+        private long _outputPosition = 0;
+
+        public CompressTask(string filenameToCompress, string compressedFilename, FixedSizeBlockGenerator inputStreamPositionGenerator, CompressedFileMetadata fileMetadata)
         {
             _inputStreamPositionGenerator = inputStreamPositionGenerator;
-            _outputStreamPositionGenerator = outputStreamPositionGenerator;
             _filenameToCompress = filenameToCompress;
             _compressedFilename = compressedFilename;
             _fileMetadata = fileMetadata;
@@ -39,44 +40,22 @@
                 inputStream = new FileStream(_filenameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
                 outputStream = new FileStream(_compressedFilename, FileMode.Open, FileAccess.Write, FileShare.Write);
 
-                byte[] dataBuffer = null;
+                const int OneMB = 1048576; //TODO: remove const
+                byte[] dataBuffer = new byte[OneMB];
 
                 long inputPosition = 0;
-                long outputPosition = 0;
 
-                const int OneMB = 1048576; //TODO: remove const
-
-                while (_inputStreamPositionGenerator.TryGetNext(OneMB, out inputPosition))
+                while (_inputStreamPositionGenerator.TryGetNext(out inputPosition))
                 {
-                    // TODO: extract read&write window logic to abstraction
-                    if (dataBuffer == null)
-                    {
-                        dataBuffer = new byte[OneMB];
-                    }
-
-                    inputStream.Seek(inputPosition, SeekOrigin.Begin);
-                    var readSize = inputStream.Read(dataBuffer, 0, dataBuffer.Length);
-
-                    if (readSize < OneMB)
-                    {
-                        Array.Resize(ref dataBuffer, readSize);
-                    }
+                    ReadData(inputStream, dataBuffer, inputPosition);
 
                     var compressedDataBuffer = Utils.CompressBuffer(dataBuffer);
 
-                    _outputStreamPositionGenerator.TryGetNext(compressedDataBuffer.Length, out outputPosition);
+                    //TODO: keep prev position
+                    var outputPosition = Interlocked.Add(ref _outputPosition, compressedDataBuffer.Length);
 
-                    outputStream.Seek(outputPosition, SeekOrigin.Begin);
-                    outputStream.Write(compressedDataBuffer);
-
-                    var blockMetadata = new BlockMetadata
-                    {
-                        OriginalPosition = inputPosition,
-                        CompressedPosition = outputPosition,
-                        SizeInBytes = compressedDataBuffer.Length
-                    };
-
-                    _fileMetadata.Add(blockMetadata);
+                    WriteData(outputStream, compressedDataBuffer, outputPosition);
+                    WriteMetadataBlock(inputPosition, outputPosition, compressedDataBuffer.Length);
                 }
             }
             finally
@@ -87,6 +66,35 @@
                 if (outputStream != null)
                     outputStream.Dispose();
             }
+        }
+
+        private void ReadData(Stream inputStream, byte[] dataBuffer, long position)
+        {
+            inputStream.Seek(position, SeekOrigin.Begin);
+            var readSize = inputStream.Read(dataBuffer, 0, dataBuffer.Length);
+
+            if (readSize < dataBuffer.Length)
+            {
+                Array.Resize(ref dataBuffer, readSize);
+            }
+        }
+
+        private void WriteData(Stream outputStream, byte[] dataBuffer, long position)
+        {
+            outputStream.Seek(position, SeekOrigin.Begin);
+            outputStream.Write(dataBuffer);
+        }
+
+        private void WriteMetadataBlock(long originalPosition, long compressedPosition, int size)
+        {
+            var blockMetadata = new BlockMetadata
+            {
+                OriginalPosition = originalPosition,
+                CompressedPosition = compressedPosition,
+                SizeInBytes = size
+            };
+
+            _fileMetadata.Add(blockMetadata);
         }
     }
 }

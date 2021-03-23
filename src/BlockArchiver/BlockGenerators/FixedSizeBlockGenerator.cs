@@ -1,30 +1,27 @@
 ﻿namespace GZipTest.BlockGenerators
 {
-    internal sealed class StreamPositionGenerator : IBlockGenerator<long>
+    internal sealed class FixedSizeBlockGenerator : IBlockGenerator<long>
     {
         private readonly object _syncObject = new object();
 
         private readonly long _totalElementsCount;
+        private readonly int _blockSize;
         private long _currentPosition = 0;
 
-        public StreamPositionGenerator(long initialOffset) : this(initialOffset, long.MaxValue)
-        {
-        }
-
-        public StreamPositionGenerator(long initialOffset, long totalElementsCount)
+        public FixedSizeBlockGenerator(int blockSize, long totalElementsCount)
         {
             _totalElementsCount = totalElementsCount;
-            _currentPosition = initialOffset;
+            _blockSize = blockSize;
         }
 
-        public bool TryGetNext(int requestedSize, out long position)
+        public bool TryGetNext(out long position)
         {
             lock (_syncObject)
             {
                 if (IsNextPositionAllowed())
                 {
                     position = _currentPosition;
-                    _currentPosition += requestedSize;
+                    _currentPosition += _blockSize;
                     return true;
                 }
                 else

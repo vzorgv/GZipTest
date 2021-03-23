@@ -16,7 +16,7 @@
             _enumerator = DecompressMetadata(metatadaStream).Blocks.GetEnumerator();
         }
 
-        public bool TryGetNext(int blockSize, out BlockMetadata current)
+        public bool TryGetNext(out BlockMetadata current)
         {
             lock (_syncObject)
             {

@@ -10,7 +10,7 @@
 
     internal static class Utils
     {
-        public static  byte[] CompressBuffer(byte[] bufferToCompress)
+        public static byte[] CompressBuffer(byte[] bufferToCompress)
         {
             using var strm = new MemoryStream();
             using var GZipStrem = new GZipStream(strm, CompressionMode.Compress);

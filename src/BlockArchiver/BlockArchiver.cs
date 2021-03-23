@@ -19,7 +19,7 @@
                 sourceFileStream = new FileStream(fileNameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var fileMetadata = new CompressedFileMetadata();
 
-                var compressTask = GetCompressTask(sourceFileStream, fileNameToCompress, compressedFileName, fileMetadata);
+                var compressTask = GetCompressTask(sourceFileStream, fileNameToCompress, compressedFileName, fileMetadata, blockSizeInBytes);
                 var threadManager = GetThreadManagerToCompress(sourceFileStream, blockSizeInBytes);
 
                 Utils.CreateCompressedFile(compressedFileName);
@@ -38,12 +38,11 @@
             }
         }
 
-        private CompressTask GetCompressTask(Stream sourceFileStream, string fileNameToCompress, string compressedFileName, CompressedFileMetadata fileMetadata)
+        private CompressTask GetCompressTask(Stream sourceFileStream, string fileNameToCompress, string compressedFileName, CompressedFileMetadata fileMetadata, int blockSize)
         {
-            var inputStreamPositionGenerator = new StreamPositionGenerator(0, sourceFileStream.Length);
-            var outputStreamPositionGenerator = new StreamPositionGenerator(0);
+            var inputStreamPositionGenerator = new FixedSizeBlockGenerator(blockSize, sourceFileStream.Length);
 
-            return new CompressTask(fileNameToCompress, compressedFileName, inputStreamPositionGenerator, outputStreamPositionGenerator, fileMetadata);
+            return new CompressTask(fileNameToCompress, compressedFileName, inputStreamPositionGenerator, fileMetadata);
         }
 
         private ThreadManager GetThreadManagerToCompress(Stream sourceFileStream, int blockSizeInBytes)
@@ -54,7 +53,8 @@
 
         private int GetChunksCount(long totalSize, int blockSizeInBytes)
         {
-            return (int)Math.Ceiling((double)totalSize / blockSizeInBytes);
+            return 1;
+            //return (int)Math.Ceiling((double)totalSize / blockSizeInBytes);
         }
 
         public void Decompress(string compressedFileName, string decompressedFileName)

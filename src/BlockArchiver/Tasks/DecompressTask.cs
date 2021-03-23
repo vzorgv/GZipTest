@@ -31,7 +31,7 @@
 
             BlockMetadata block = null;
 
-            while (_blockGenerator.TryGetNext(0, out block))
+            while (_blockGenerator.TryGetNext(out block))
             {
                 compressedFileStream.Seek(block.CompressedPosition, SeekOrigin.Begin);
                 var decompressedData = Utils.DecompressBlock(compressedFileStream, block);
