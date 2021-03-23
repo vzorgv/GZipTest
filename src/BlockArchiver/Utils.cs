@@ -22,11 +22,13 @@
             return compressedBuffer;
         }
 
-        public static void CreateCompressedFile(string compressedFileName)
+        public static long CreateCompressedFileWithHeader(string compressedFileName)
         {
             using FileStream outputStream = new FileStream(compressedFileName, FileMode.Create, FileAccess.Write);
             var metadataPositionPlaceholder = BitConverter.GetBytes((long)0);
             outputStream.Write(metadataPositionPlaceholder);
+
+            return sizeof(long);
         }
 
         public static void WriteMetadata(string compressedFileName, CompressedFileMetadata fileMetadata)

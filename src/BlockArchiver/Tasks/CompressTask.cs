@@ -16,14 +16,15 @@
 
         private readonly object _syncObj = new object();
 
-        private long _outputPosition = 0;
+        private long _writePosition;
 
-        public CompressTask(string filenameToCompress, string compressedFilename, FixedSizeBlockGenerator inputStreamPositionGenerator, CompressedFileMetadata fileMetadata)
+        public CompressTask(string filenameToCompress, string compressedFilename, FixedSizeBlockGenerator inputStreamPositionGenerator, CompressedFileMetadata fileMetadata, long initialWritePosition)
         {
             _inputStreamPositionGenerator = inputStreamPositionGenerator;
             _filenameToCompress = filenameToCompress;
             _compressedFilename = compressedFilename;
             _fileMetadata = fileMetadata;
+            _writePosition = initialWritePosition;
         }
 
         public void Run()
@@ -54,7 +55,7 @@
                     var compressedDataBuffer = Utils.CompressBuffer(dataBuffer);
 
                     long outputPosition = 0;
-                    GetAndUpdateOutputPosition(compressedDataBuffer.Length, out outputPosition);
+                    GetAndUpdateWritePosition(compressedDataBuffer.Length, out outputPosition);
 
                     WriteData(outputStream, compressedDataBuffer, outputPosition);
                     WriteMetadataBlock(inputPosition, outputPosition, compressedDataBuffer.Length);
@@ -99,12 +100,12 @@
             _fileMetadata.Add(blockMetadata);
         }
 
-        private void GetAndUpdateOutputPosition(int addValue, out long position)
+        private void GetAndUpdateWritePosition(int addValue, out long position)
         {
             lock (_syncObj)
             {
-                position = _outputPosition;
-                _outputPosition += addValue;
+                position = _writePosition;
+                _writePosition += addValue;
             }
         }
     }

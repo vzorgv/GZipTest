@@ -15,8 +15,8 @@
             stopWatch.Start();
 
             var archiver = new BlockArchiver();
-            archiver.Compress(@"C:\temp\_1.txt", @"C:\Temp\_2.gzt", OneMB);
-            // archiver.Decompress(@"C:\Temp\_2.gzt", @"C:\temp\_decompressed.txt");
+             archiver.Compress(@"C:\temp\_1.txt", @"C:\Temp\_2.gzt", OneMB);
+             archiver.Decompress(@"C:\Temp\_2.gzt", @"C:\temp\_decompressed.txt");
 
             stopWatch.Stop();
 

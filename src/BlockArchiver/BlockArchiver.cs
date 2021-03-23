@@ -19,10 +19,10 @@
                 sourceFileStream = new FileStream(fileNameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var fileMetadata = new CompressedFileMetadata();
 
-                var compressTask = GetCompressTask(sourceFileStream, fileNameToCompress, compressedFileName, fileMetadata, blockSizeInBytes);
-                var threadManager = GetThreadManagerToCompress(sourceFileStream, blockSizeInBytes);
+                var initialWritePosition = Utils.CreateCompressedFileWithHeader(compressedFileName);
 
-                Utils.CreateCompressedFile(compressedFileName);
+                var compressTask = GetCompressTask(sourceFileStream, fileNameToCompress, compressedFileName, fileMetadata, blockSizeInBytes, initialWritePosition);
+                var threadManager = GetThreadManagerToCompress(sourceFileStream, blockSizeInBytes);
 
                 threadManager.RunInParallel(compressTask);
                 threadManager.WaitAll();
@@ -38,11 +38,11 @@
             }
         }
 
-        private CompressTask GetCompressTask(Stream sourceFileStream, string fileNameToCompress, string compressedFileName, CompressedFileMetadata fileMetadata, int blockSize)
+        private CompressTask GetCompressTask(Stream sourceFileStream, string fileNameToCompress, string compressedFileName, CompressedFileMetadata fileMetadata, int blockSize, long initialPosition)
         {
             var inputStreamPositionGenerator = new FixedSizeBlockGenerator(blockSize, sourceFileStream.Length);
 
-            return new CompressTask(fileNameToCompress, compressedFileName, inputStreamPositionGenerator, fileMetadata);
+            return new CompressTask(fileNameToCompress, compressedFileName, inputStreamPositionGenerator, fileMetadata, initialPosition);
         }
 
         private ThreadManager GetThreadManagerToCompress(Stream sourceFileStream, int blockSizeInBytes)
