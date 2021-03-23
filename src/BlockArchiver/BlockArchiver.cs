@@ -6,8 +6,8 @@
     using GZipTest.Tasks;
     using System;
     using System.IO;
+    using System.Threading;
 
-    //TODO:  construct tasks and task manager using factory
     public class BlockArchiver
     {
         public void Compress(string fileNameToCompress, string compressedFileName, int blockSizeInBytes)
@@ -16,13 +16,14 @@
 
             try
             {
-                sourceFileStream = new FileStream(fileNameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var initialWritePosition = Utils.CreateCompressedFileWithHeader(compressedFileName);
                 var fileMetadata = new CompressedFileMetadata();
 
-                var initialWritePosition = Utils.CreateCompressedFileWithHeader(compressedFileName);
-
+                sourceFileStream = new FileStream(fileNameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var compressTask = GetCompressTask(sourceFileStream, fileNameToCompress, compressedFileName, fileMetadata, blockSizeInBytes, initialWritePosition);
                 var threadManager = GetThreadManagerToCompress(sourceFileStream, blockSizeInBytes);
+
+                sourceFileStream.Dispose();
 
                 threadManager.RunInParallel(compressTask);
                 threadManager.WaitAll();
@@ -60,7 +61,9 @@
         {
             var generator = Utils.DecompressMetadata(compressedFileName);
             var decompressTask = new DecompressTask(compressedFileName, decompressedFileName, generator);
-            decompressTask.Run();
+
+            var cts = new CancellationTokenSource();
+            decompressTask.Run(cts.Token);
         }
     }
 }

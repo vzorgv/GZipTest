@@ -3,9 +3,11 @@
     using GZipTest.BlockGenerators;
     using GZipTest.Metadata;
     using GZipTest.TaskManagement;
+    using System;
     using System.IO;
+    using System.Threading;
 
-    internal sealed class DecompressTask : IRunnable
+    internal sealed class DecompressTask : ICanceleableTask
     {
         private readonly IBlockGenerator<BlockMetadata> _blockGenerator;
         private readonly string _decompressedFileName;
@@ -18,13 +20,12 @@
             _blockGenerator = blockGenerator;
         }
 
-        public void Run()
+        public void Run(CancellationToken cancellationToken)
         {
-            //TODO: implement gracefully shutdown
-            Decompress();
+            Decompress(cancellationToken);
         }
 
-        private void Decompress()
+        private void Decompress(CancellationToken cancellationToken)
         {
             using var compressedFileStream = new FileStream(_compressedFilename, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var decompressedFileStream = new FileStream(_decompressedFileName, FileMode.Create, FileAccess.Write);
@@ -33,6 +34,9 @@
 
             while (_blockGenerator.TryGetNext(out block))
             {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
                 compressedFileStream.Seek(block.CompressedPosition, SeekOrigin.Begin);
                 var decompressedData = Utils.DecompressBlock(compressedFileStream, block);
 

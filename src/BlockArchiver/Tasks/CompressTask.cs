@@ -7,7 +7,7 @@
     using System.IO;
     using System.Threading;
 
-    internal sealed class CompressTask : IRunnable
+    internal sealed class CompressTask : ICanceleableTask
     {
         private readonly FixedSizeBlockGenerator _inputStreamPositionGenerator;
         private readonly CompressedFileMetadata _fileMetadata;
@@ -27,13 +27,12 @@
             _writePosition = initialWritePosition;
         }
 
-        public void Run()
+        public void Run(CancellationToken cancellationToken)
         {
-            //TODO: implement gracefully shutdown
-            Compress();
+            Compress(cancellationToken);
         }
 
-        private void Compress()
+        private void Compress(CancellationToken cancellationToken)
         {
             FileStream inputStream = null;
             FileStream outputStream = null;
@@ -50,6 +49,9 @@
 
                 while (_inputStreamPositionGenerator.TryGetNext(out inputPosition))
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                        break;
+
                     ReadData(inputStream, dataBuffer, inputPosition);
 
                     var compressedDataBuffer = Utils.CompressBuffer(dataBuffer);
