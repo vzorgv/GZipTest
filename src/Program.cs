@@ -1,38 +1,119 @@
 ﻿namespace GZipTest
 {
-    using GZipTest.Archiver;
+    using GZipTest.BlockArchiver;
     using System;
     using System.Diagnostics;
 
     class Program
     {
+        internal enum OperationType
+        {
+            Compress,
+            Decompress
+        }
+
+        internal class Parameters
+        {
+            public OperationType Operation { get; set; }
+            public string SourceFile { get; set; }
+            public string DestinationFile { get; set; }
+        }
+
+        private static void PrintHelp()
+        {
+            Console.WriteLine("Please use:");
+            Console.WriteLine("GZipTest compress <file_to_compress> <compressed_file>");
+            Console.WriteLine("or");
+            Console.WriteLine("GZipTest decompress <file_to_decompress> <decompressed_file>");
+        }
+
+        private static Parameters ParseCommandLine(string[] args)
+        {
+            var parms = new Parameters();
+
+            if (args.Length != 3)
+            {
+                throw new Exception("Error in command line");
+            }
+
+            switch (args[0])
+            {
+                case "compress":
+                    parms.Operation = OperationType.Compress;
+                    break;
+                case "decompress":
+                    parms.Operation = OperationType.Decompress;
+                    break;
+
+                default:
+                    throw new Exception("Incorrect operation type");
+            }
+
+            parms.SourceFile = args[1];
+            parms.DestinationFile = args[2];
+
+            return parms;
+        }
+
+        private static void Run(Parameters parms)
+        {
+            const int OneMB = 1048576;
+
+            switch (parms.Operation)
+            {
+                case OperationType.Compress:
+                    var compressor = new Compressor(parms.SourceFile, parms.DestinationFile, OneMB);
+                    compressor.Run();
+                    break;
+
+                case OperationType.Decompress:
+                    var decompressor = new Decompressor(parms.SourceFile, parms.DestinationFile);
+                    decompressor.Run();
+                    break;
+            }
+        }
+
         static int Main(string[] args)
         {
             int ret = 0;
-            //TODO: parse args
-            const int OneMB = 1048576;
+            Parameters parms;
 
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
+            try
+            {
+                parms = ParseCommandLine(args);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                PrintHelp();
+                return 1;
+            }
 
-            var archiver = new BlockArchiver();
-            archiver.Compress(@"C:\temp\_1.txt", @"C:\Temp\_2.gzt", OneMB);
-             // archiver.Decompress(@"C:\Temp\_2.gzt", @"C:\temp\_decompressed.txt");
+            try
+            {
+                Stopwatch stopWatch = new Stopwatch();
+                stopWatch.Start();
 
-            stopWatch.Stop();
+                Console.WriteLine("Processing...");
 
-            //TODO: impement SIGTERM handling
+                Run(parms);
 
-            TimeSpan ts = stopWatch.Elapsed;
+                stopWatch.Stop();
 
-            // Format and display the TimeSpan value.
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts.Hours, ts.Minutes, ts.Seconds,
-                ts.Milliseconds / 10);
-            Console.WriteLine("Compress duration " + elapsedTime);
+                TimeSpan ts = stopWatch.Elapsed;
 
-            //TODO: implement return result
-            return 0;
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds,
+                    ts.Milliseconds / 10);
+                Console.WriteLine("Process duration " + elapsedTime);
+            }
+            catch
+            {
+                Console.WriteLine("Process terminated");
+                ret = 1;
+            }
+
+            return ret;
         }
     }
 }

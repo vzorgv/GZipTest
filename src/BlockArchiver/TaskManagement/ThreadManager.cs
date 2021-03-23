@@ -41,7 +41,7 @@
                 _autoResetEvent.WaitOne(LOOKUP_THREAD_STATE_TIMEOUT);
 
             if (_firstException != null)
-                throw new Exception("Error occured:", _firstException);
+                throw _firstException;
         }
 
         public void StopAll()

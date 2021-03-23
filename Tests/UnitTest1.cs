@@ -1,5 +1,3 @@
-using GZipTest;
-using GZipTest.Archiver;
 using NUnit.Framework;
 
 namespace Tests
@@ -14,7 +12,7 @@ namespace Tests
         [Test]
         public void Test1()
         {
-            var archiver = new BlockArchiver();
+            // var archiver = new Decompressor();
         }
     }
 }

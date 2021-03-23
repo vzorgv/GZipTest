@@ -27,7 +27,7 @@
         private void Decompress(CancellationToken cancellationToken)
         {
             using var compressedFileStream = new FileStream(_compressedFilename, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var decompressedFileStream = new FileStream(_decompressedFileName, FileMode.Create, FileAccess.Write);
+            using var decompressedFileStream = new FileStream(_decompressedFileName, FileMode.Create, FileAccess.Write, FileShare.Write);
 
             BlockMetadata block = null;
 
