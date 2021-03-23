@@ -44,13 +44,13 @@
             catch (Exception ex)
             {
                 Console.WriteLine($"Error occured: {ex.Message}");
+                Utils.DeleteFile(_compressedFilename);
                 throw;
             }
             finally
             {
                 sourceFileStream?.Dispose();
                 threadManager?.Dispose();
-                Utils.DeleteFile(_compressedFilename);
             }
         }
 

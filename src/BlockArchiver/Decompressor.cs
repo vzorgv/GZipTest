@@ -30,12 +30,12 @@
             catch (Exception ex)
             {
                 Console.WriteLine($"Error occured: {ex.Message}");
+                Utils.DeleteFile(_compressedFilename);
                 throw;
             }
             finally
             {
                 threadManager?.Dispose();
-                Utils.DeleteFile(_decompressedFilename);
             }
         }
 

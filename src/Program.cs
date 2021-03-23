@@ -1,4 +1,7 @@
-﻿namespace GZipTest
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Tests")]
+namespace GZipTest
 {
     using GZipTest.BlockArchiver;
     using System;
@@ -112,7 +115,7 @@
                 Console.WriteLine("Process terminated");
                 ret = 1;
             }
-
+            //TODO: handle SIGINT, SIGTERM
             return ret;
         }
     }
