@@ -50,7 +50,7 @@
             {
                 sourceFileStream?.Dispose();
                 threadManager?.Dispose();
-                //TODO: clear
+                Utils.DeleteFile(_compressedFilename);
             }
         }
 

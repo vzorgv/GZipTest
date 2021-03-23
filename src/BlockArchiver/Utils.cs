@@ -78,5 +78,15 @@
 
             return decompressedMemoryStream.ToArray();
         }
+
+        public static void DeleteFile(string filename)
+        {
+            try
+            {
+                File.Delete(filename);
+            }
+            catch
+            { }
+        }
     }
 }

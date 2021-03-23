@@ -35,7 +35,7 @@
             finally
             {
                 threadManager?.Dispose();
-                //TODO: clear
+                Utils.DeleteFile(_decompressedFilename);
             }
         }
 
