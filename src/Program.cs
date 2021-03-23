@@ -8,6 +8,7 @@
     {
         static int Main(string[] args)
         {
+            int ret = 0;
             //TODO: parse args
             const int OneMB = 1048576;
 

@@ -13,6 +13,7 @@
         public void Compress(string fileNameToCompress, string compressedFileName, int blockSizeInBytes)
         {
             FileStream sourceFileStream = null;
+            ThreadManager threadManager = null;
 
             try
             {
@@ -21,9 +22,9 @@
 
                 sourceFileStream = new FileStream(fileNameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var compressTask = GetCompressTask(sourceFileStream, fileNameToCompress, compressedFileName, fileMetadata, blockSizeInBytes, initialWritePosition);
-                var threadManager = GetThreadManagerToCompress(sourceFileStream, blockSizeInBytes);
+                threadManager = GetThreadManagerToCompress(sourceFileStream, blockSizeInBytes);
 
-                sourceFileStream.Dispose();
+                sourceFileStream.Close();
 
                 threadManager.RunInParallel(compressTask);
                 threadManager.WaitAll();
@@ -32,10 +33,8 @@
             }
             finally
             {
-                if (sourceFileStream != null)
-                {
-                    sourceFileStream.Dispose();
-                }
+                sourceFileStream?.Dispose();
+                threadManager?.Dispose();
             }
         }
 
