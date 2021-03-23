@@ -3,7 +3,6 @@
     using GZipTest.BlockGenerators;
     using GZipTest.Metadata;
     using GZipTest.TaskManagement;
-    using System;
     using System.IO;
     using System.Threading;
 
@@ -35,7 +34,9 @@
             while (_blockGenerator.TryGetNext(out block))
             {
                 if (cancellationToken.IsCancellationRequested)
+                {
                     break;
+                }
 
                 compressedFileStream.Seek(block.CompressedPosition, SeekOrigin.Begin);
                 var decompressedData = Utils.DecompressBlock(compressedFileStream, block);

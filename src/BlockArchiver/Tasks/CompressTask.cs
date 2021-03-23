@@ -34,42 +34,26 @@
 
         private void Compress(CancellationToken cancellationToken)
         {
-            FileStream inputStream = null;
-            FileStream outputStream = null;
+            using var inputStream = new FileStream(_filenameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var outputStream = new FileStream(_compressedFilename, FileMode.Open, FileAccess.Write, FileShare.Write);
 
-            try
+            byte[] dataBuffer = new byte[_inputStreamPositionGenerator.BlockSize];
+
+            long inputPosition = 0;
+
+            while (_inputStreamPositionGenerator.TryGetNext(out inputPosition))
             {
-                inputStream = new FileStream(_filenameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
-                outputStream = new FileStream(_compressedFilename, FileMode.Open, FileAccess.Write, FileShare.Write);
+                if (cancellationToken.IsCancellationRequested)
+                    break;
 
-                const int OneMB = 1048576; //TODO: remove const
-                byte[] dataBuffer = new byte[OneMB];
+                ReadData(inputStream, dataBuffer, inputPosition);
 
-                long inputPosition = 0;
+                var compressedDataBuffer = Utils.CompressBuffer(dataBuffer);
 
-                while (_inputStreamPositionGenerator.TryGetNext(out inputPosition))
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                        break;
+                GetAndUpdateWritePosition(compressedDataBuffer.Length, out long outputPosition);
 
-                    ReadData(inputStream, dataBuffer, inputPosition);
-
-                    var compressedDataBuffer = Utils.CompressBuffer(dataBuffer);
-
-                    long outputPosition = 0;
-                    GetAndUpdateWritePosition(compressedDataBuffer.Length, out outputPosition);
-
-                    WriteData(outputStream, compressedDataBuffer, outputPosition);
-                    WriteMetadataBlock(inputPosition, outputPosition, compressedDataBuffer.Length);
-                }
-            }
-            finally
-            {
-                if (inputStream != null)
-                    inputStream.Dispose();
-
-                if (outputStream != null)
-                    outputStream.Dispose();
+                WriteData(outputStream, compressedDataBuffer, outputPosition);
+                WriteMetadataBlock(inputPosition, outputPosition, compressedDataBuffer.Length);
             }
         }
 

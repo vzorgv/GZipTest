@@ -9,8 +9,8 @@
         /// <summary>
         /// Advances the enumerator to the next element of the collection
         /// </summary>
-        /// <param name="current">The current element of collection</param>
+        /// <param name="currentBlock">The current element of collection</param>
         /// <returns>True if the next element exist in collection; otherwise False</returns>
-        bool TryGetNext(out T current);
+        bool TryGetNext(out T currentBlock);
     }
 }

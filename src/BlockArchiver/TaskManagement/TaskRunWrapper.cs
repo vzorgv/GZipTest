@@ -6,22 +6,34 @@
     internal sealed class TaskRunWrapper
     {
         private readonly ICanceleableTask _task;
+        private readonly Action<Exception> _errorHandler;
 
-        public TaskRunWrapper(ICanceleableTask task)
+        public TaskRunWrapper(ICanceleableTask task, Action<Exception> errorHandler)
         {
+            if (errorHandler == null)
+                throw new ArgumentNullException(nameof(errorHandler));
+
             _task = task;
+            _errorHandler = errorHandler;
         }
 
         public void Run(object cancellationToken)
         {
             CancellationToken token;
 
-            if (cancellationToken == null)
-                throw new ArgumentNullException(nameof(cancellationToken));
+            try
+            {
+                if (cancellationToken == null)
+                    throw new ArgumentNullException(nameof(cancellationToken));
 
-            token = (CancellationToken)cancellationToken;
+                token = (CancellationToken)cancellationToken;
 
-            _task.Run(token);
+                _task.Run(token);
+            }
+            catch (Exception e)
+            {
+                _errorHandler(e);
+            }
         }
     }
 }

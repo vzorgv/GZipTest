@@ -5,14 +5,15 @@
         private readonly object _syncObject = new object();
 
         private readonly long _totalElementsCount;
-        private readonly int _blockSize;
         private long _currentPosition = 0;
 
         public FixedSizeBlockGenerator(int blockSize, long totalElementsCount)
         {
             _totalElementsCount = totalElementsCount;
-            _blockSize = blockSize;
+            BlockSize = blockSize;
         }
+
+        public int BlockSize { get; }
 
         public bool TryGetNext(out long position)
         {
@@ -21,7 +22,7 @@
                 if (IsNextPositionAllowed())
                 {
                     position = _currentPosition;
-                    _currentPosition += _blockSize;
+                    _currentPosition += BlockSize;
                     return true;
                 }
                 else
