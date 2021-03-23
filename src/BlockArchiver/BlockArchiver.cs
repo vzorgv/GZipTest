@@ -53,8 +53,7 @@
 
         private int GetChunksCount(long totalSize, int blockSizeInBytes)
         {
-            return 1;
-            //return (int)Math.Ceiling((double)totalSize / blockSizeInBytes);
+            return (int)Math.Ceiling((double)totalSize / blockSizeInBytes);
         }
 
         public void Decompress(string compressedFileName, string decompressedFileName)

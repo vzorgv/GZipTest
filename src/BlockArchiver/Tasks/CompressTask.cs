@@ -14,6 +14,8 @@
         private readonly string _filenameToCompress;
         private readonly string _compressedFilename;
 
+        private readonly object _syncObj = new object();
+
         private long _outputPosition = 0;
 
         public CompressTask(string filenameToCompress, string compressedFilename, FixedSizeBlockGenerator inputStreamPositionGenerator, CompressedFileMetadata fileMetadata)
@@ -51,8 +53,8 @@
 
                     var compressedDataBuffer = Utils.CompressBuffer(dataBuffer);
 
-                    //TODO: keep prev position
-                    var outputPosition = Interlocked.Add(ref _outputPosition, compressedDataBuffer.Length);
+                    long outputPosition = 0;
+                    GetAndUpdateOutputPosition(compressedDataBuffer.Length, out outputPosition);
 
                     WriteData(outputStream, compressedDataBuffer, outputPosition);
                     WriteMetadataBlock(inputPosition, outputPosition, compressedDataBuffer.Length);
@@ -95,6 +97,15 @@
             };
 
             _fileMetadata.Add(blockMetadata);
+        }
+
+        private void GetAndUpdateOutputPosition(int addValue, out long position)
+        {
+            lock (_syncObj)
+            {
+                position = _outputPosition;
+                _outputPosition += addValue;
+            }
         }
     }
 }
