@@ -1,8 +1,7 @@
 {
   "profiles": {
     "GZipTest": {
-      "commandName": "Project",
-      "commandLineArgs": "decompress c:\\temp\\_1.gzt c:\\temp\\_2.txt"
+      "commandName": "Project"
     }
   }
 }
