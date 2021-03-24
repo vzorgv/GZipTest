@@ -1,10 +1,7 @@
 namespace Tests
 {
     using GZipTest.BlockArchiver;
-    using GZipTest.Metadata;
     using NUnit.Framework;
-    using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Security.Cryptography;
@@ -32,11 +29,14 @@ namespace Tests
         [OneTimeTearDown]
         public void Cleanup()
         {
+            File.Delete(compressedFilename);
+            File.Delete(toCompressFilename);
+            File.Delete(decompressedFilename);
         }
 
 
         [Test]
-        public void WhenCompress_DecompressFile_Checksum_TheSame()
+        public void WhenCompress_DecompressFile_Checksums_TheSame()
         {
             var compressor = new Compressor(toCompressFilename, compressedFilename, 1024);
             compressor.Run();

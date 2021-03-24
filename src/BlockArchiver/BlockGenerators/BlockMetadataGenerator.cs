@@ -1,6 +1,7 @@
 ﻿namespace GZipTest.BlockGenerators
 {
     using GZipTest.Metadata;
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text.Json;
@@ -29,11 +30,18 @@
 
         private CompressedFileMetadata DecompressMetadata(Stream compressedMetadataStream)
         {
-            using var streamReader = new StreamReader(compressedMetadataStream);
+            try
+            {
+                using var streamReader = new StreamReader(compressedMetadataStream);
 
-            var jsonString = streamReader.ReadToEnd();
-            
-            return JsonSerializer.Deserialize<CompressedFileMetadata>(jsonString);
+                var jsonString = streamReader.ReadToEnd();
+
+                return JsonSerializer.Deserialize<CompressedFileMetadata>(jsonString);
+            }
+            catch (JsonException ex)
+            {
+                throw new Exception("File corrupted or incorrect format (cannot read metadata)", ex);
+            }
         }
     }
 }
