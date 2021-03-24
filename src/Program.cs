@@ -62,7 +62,6 @@ namespace GZipTest
             try
             {
                 parms = ParseCommandLine(args);
-                Run(parms);
             }
             catch (Exception ex)
             {
