@@ -1,5 +1,6 @@
 namespace Tests
 {
+    using GZipTest;
     using GZipTest.Processor;
     using NUnit.Framework;
     using System.IO;
@@ -39,14 +40,34 @@ namespace Tests
         [Test]
         public void WhenCompress_DecompressFile_Checksums_TheSame()
         {
+            // Arrange
             const int OneKb = 1024;
 
-            var compressor = new Compressor(toCompressFilename, compressedFilename, OneKb);
-            compressor.StartProcess();
+            var compressorParms = new CreateProcessParms()
+            {
+                Operation = OperationType.Compress,
+                SourceFile = toCompressFilename,
+                DestinationFile = compressedFilename
+            };
 
-            var decompressor = new Decompressor(compressedFilename, decompressedFilename);
+            var factory = new ProcessorFactory(compressorParms, OneKb);
+            var compressor = factory.Create();
+
+            var decompressorParms = new CreateProcessParms()
+            {
+                Operation = OperationType.Decompress,
+                SourceFile = compressedFilename,
+                DestinationFile = decompressedFilename
+            };
+
+            factory = new ProcessorFactory(decompressorParms, 0);
+            var decompressor = factory.Create();
+
+            // Act
+            compressor.StartProcess();
             decompressor.StartProcess();
 
+            // Assert
             var expectedChecksum = CalcMD5Checksum(toCompressFilename);
             var actualChecksum = CalcMD5Checksum(decompressedFilename);
 
@@ -56,18 +77,18 @@ namespace Tests
         [Test]
         public void WhenFileNotExist_Compress_Should_ThrowException()
         {
+            // Arrange
             var compressor = new Compressor("_" + toCompressFilename, "_" + compressedFilename, 1024);
-            var decompressor = new Decompressor(compressedFilename, "_" + decompressedFilename);
 
-            Assert.Throws<IOException>(decompressor.StartProcess);
+            Assert.Throws<IOException>(compressor.StartProcess);
         }
 
         [Test]
         public void WhenFileNotExist_Decompress_Should_ThrowException()
         {
-            var compressor = new Compressor("_" + toCompressFilename, "_" + compressedFilename, 1024);
+            var decompressor = new Decompressor("_" + toCompressFilename, "_" + compressedFilename);
 
-            Assert.Throws<IOException>(compressor.StartProcess);
+            Assert.Throws<IOException>(decompressor.StartProcess);
         }
 
         private byte[] CalcMD5Checksum(string filename)
