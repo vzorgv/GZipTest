@@ -1,4 +1,4 @@
-﻿namespace GZipTest.BlockArchiver
+﻿namespace GZipTest.Processor
 {
     using GZipTest.BlockGenerators;
     using GZipTest.Metadata;
@@ -7,7 +7,7 @@
     using System;
     using System.IO;
 
-    internal sealed class Compressor
+    internal sealed class Compressor : IArchiverProcessor
     {
         private readonly string _filenameToCompress;
         private readonly string _compressedFilename;
@@ -21,7 +21,7 @@
         }
 
 
-        public void Run()
+        public void StartProcess()
         {
             FileStream sourceFileStream = null;
             ThreadManager threadManager = null;

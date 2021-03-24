@@ -1,10 +1,10 @@
-﻿namespace GZipTest.BlockArchiver
+﻿namespace GZipTest.Processor
 {
     using GZipTest.TaskManagement;
     using GZipTest.Tasks;
     using System;
 
-    internal sealed class Decompressor
+    internal sealed class Decompressor : IArchiverProcessor
     {
         private readonly string _compressedFilename;
         private readonly string _decompressedFilename;
@@ -15,7 +15,7 @@
             _decompressedFilename = decompressedFilename;
         }
 
-        public void Run()
+        public void StartProcess()
         {
             ThreadManager threadManager = null;
 

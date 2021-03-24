@@ -1,6 +1,6 @@
 namespace Tests
 {
-    using GZipTest.BlockArchiver;
+    using GZipTest.Processor;
     using NUnit.Framework;
     using System.IO;
     using System.Linq;
@@ -20,9 +20,10 @@ namespace Tests
             using var toCompressFileStream = new FileStream(toCompressFilename, FileMode.Create);
             using var writer = new StreamWriter(toCompressFileStream);
 
+            // Generate file ~1Mb
             for (var i = 0; i < 22_000; i++)
             {
-                writer.WriteLine($"{i}-th test line written");
+                writer.WriteLine($"{i} - th test line written");
             }
         }
 
@@ -38,11 +39,13 @@ namespace Tests
         [Test]
         public void WhenCompress_DecompressFile_Checksums_TheSame()
         {
-            var compressor = new Compressor(toCompressFilename, compressedFilename, 1024);
-            compressor.Run();
+            const int OneKb = 1024;
+
+            var compressor = new Compressor(toCompressFilename, compressedFilename, OneKb);
+            compressor.StartProcess();
 
             var decompressor = new Decompressor(compressedFilename, decompressedFilename);
-            decompressor.Run();
+            decompressor.StartProcess();
 
             var expectedChecksum = CalcMD5Checksum(toCompressFilename);
             var actualChecksum = CalcMD5Checksum(decompressedFilename);
@@ -56,7 +59,7 @@ namespace Tests
             var compressor = new Compressor("_" + toCompressFilename, "_" + compressedFilename, 1024);
             var decompressor = new Decompressor(compressedFilename, "_" + decompressedFilename);
 
-            Assert.Throws<IOException>(decompressor.Run);
+            Assert.Throws<IOException>(decompressor.StartProcess);
         }
 
         [Test]
@@ -64,7 +67,7 @@ namespace Tests
         {
             var compressor = new Compressor("_" + toCompressFilename, "_" + compressedFilename, 1024);
 
-            Assert.Throws<IOException>(compressor.Run);
+            Assert.Throws<IOException>(compressor.StartProcess);
         }
 
         private byte[] CalcMD5Checksum(string filename)

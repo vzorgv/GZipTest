@@ -3,25 +3,11 @@
 [assembly: InternalsVisibleTo("Tests")]
 namespace GZipTest
 {
-    using GZipTest.BlockArchiver;
     using System;
     using System.Diagnostics;
 
     class Program
     {
-        internal enum OperationType
-        {
-            Compress,
-            Decompress
-        }
-
-        internal class Parameters
-        {
-            public OperationType Operation { get; set; }
-            public string SourceFile { get; set; }
-            public string DestinationFile { get; set; }
-        }
-
         private static void PrintHelp()
         {
             Console.WriteLine("Please use:");
@@ -30,9 +16,9 @@ namespace GZipTest
             Console.WriteLine("GZipTest decompress <file_to_decompress> <decompressed_file>");
         }
 
-        private static Parameters ParseCommandLine(string[] args)
+        private static CreateProcessParms ParseCommandLine(string[] args)
         {
-            var parms = new Parameters();
+            var parms = new CreateProcessParms();
 
             if (args.Length != 3)
             {
@@ -58,32 +44,25 @@ namespace GZipTest
             return parms;
         }
 
-        private static void Run(Parameters parms)
+        private static void Run(CreateProcessParms parms)
         {
-            const int OneMB = 1048576;
+            const int OneMb = 1048576;
 
-            switch (parms.Operation)
-            {
-                case OperationType.Compress:
-                    var compressor = new Compressor(parms.SourceFile, parms.DestinationFile, OneMB);
-                    compressor.Run();
-                    break;
+            var processor = new ProcessorFactory(parms, OneMb)
+                    .Create();
 
-                case OperationType.Decompress:
-                    var decompressor = new Decompressor(parms.SourceFile, parms.DestinationFile);
-                    decompressor.Run();
-                    break;
-            }
+            processor.StartProcess();
         }
 
         static int Main(string[] args)
         {
             int ret = 0;
-            Parameters parms;
+            CreateProcessParms parms;
 
             try
             {
                 parms = ParseCommandLine(args);
+                Run(parms);
             }
             catch (Exception ex)
             {
