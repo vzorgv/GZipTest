@@ -7,7 +7,7 @@
     internal sealed class ThreadManager : IDisposable
     {
         private const int LOOKUP_THREAD_STATE_TIMEOUT = 10;
-        
+
         private readonly ConcurrentDictionary<int, Thread> _threads = new ConcurrentDictionary<int, Thread>();
         private readonly IThreadCountCalculationStrategy _threadCountCalculationStrategy;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -15,6 +15,7 @@
 
         private readonly object _errorSync = new object();
         private Exception _firstException = null;
+        private bool _disposed = false;
 
         public ThreadManager(IThreadCountCalculationStrategy threadCountCalculationStrategy)
         {
@@ -25,7 +26,6 @@
         {
             var threadCount = _threadCountCalculationStrategy.GetThreadCount();
             _autoResetEvent = new AutoResetEvent(false);
-
 
             for (int i = 0; i < threadCount; i++)
             {
@@ -38,16 +38,30 @@
         public void WaitAll()
         {
             while (_firstException == null && _threads.Count > 0)
+            {
                 _autoResetEvent.WaitOne(LOOKUP_THREAD_STATE_TIMEOUT);
+            }
 
             if (_firstException != null)
+            {
                 throw _firstException;
+            }
         }
 
         public void StopAll()
         {
             _cancellationTokenSource.Cancel();
             WaitAll();
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _autoResetEvent?.Dispose();
+                _cancellationTokenSource.Dispose();
+            }
         }
 
         private void OnError(Exception error)
@@ -72,12 +86,6 @@
         {
             _threads.TryRemove(Thread.CurrentThread.ManagedThreadId, out _);
             _autoResetEvent.Set();
-        }
-
-        public void Dispose()
-        {
-            _autoResetEvent?.Dispose();
-            _cancellationTokenSource.Dispose();
         }
     }
 }

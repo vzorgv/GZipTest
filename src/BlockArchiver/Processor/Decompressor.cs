@@ -9,6 +9,8 @@
         private readonly string _compressedFilename;
         private readonly string _decompressedFilename;
 
+        private ThreadManager _threadManager = null;
+
         public Decompressor(string compressedFilename, string decompressedFilename)
         {
             _compressedFilename = compressedFilename;
@@ -17,15 +19,13 @@
 
         public void StartProcess()
         {
-            ThreadManager threadManager = null;
-
             try
             {
                 var decompressTask = GetTask();
-                threadManager = GetThreadManager();
+                _threadManager = GetThreadManager();
 
-                threadManager.RunInParallel(decompressTask);
-                threadManager.WaitAll();
+                _threadManager.RunInParallel(decompressTask);
+                _threadManager.WaitAll();
             }
             catch (Exception ex)
             {
@@ -35,8 +35,13 @@
             }
             finally
             {
-                threadManager?.Dispose();
+                _threadManager?.Dispose();
             }
+        }
+
+        public void StopProcess()
+        {
+            _threadManager?.StopAll();
         }
 
         private ICanceleableTask GetTask()

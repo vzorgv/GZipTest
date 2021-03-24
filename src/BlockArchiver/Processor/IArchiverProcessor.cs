@@ -3,5 +3,6 @@
     internal interface IArchiverProcessor
     {
         void StartProcess();
+        void StopProcess();
     }
 }

@@ -93,7 +93,7 @@ namespace GZipTest
                 Console.WriteLine("Process terminated");
                 ret = 1;
             }
-            //TODO: handle SIGINT, SIGTERM
+
             return ret;
         }
     }

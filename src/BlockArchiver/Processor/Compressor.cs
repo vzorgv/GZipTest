@@ -13,6 +13,9 @@
         private readonly string _compressedFilename;
         private readonly int _blockSizeInBytes;
 
+        private ThreadManager _threadManager = null;
+
+
         public Compressor(string filenameToCompress, string compressedFilename, int blockSizeInBytes)
         {
             _filenameToCompress = filenameToCompress;
@@ -24,7 +27,6 @@
         public void StartProcess()
         {
             FileStream sourceFileStream = null;
-            ThreadManager threadManager = null;
 
             try
             {
@@ -33,12 +35,12 @@
 
                 sourceFileStream = new FileStream(_filenameToCompress, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var compressTask = GetTask(sourceFileStream, _filenameToCompress, _compressedFilename, fileMetadata, _blockSizeInBytes, initialWritePosition);
-                threadManager = GetThreadManager(sourceFileStream, _blockSizeInBytes);
+                _threadManager = GetThreadManager(sourceFileStream, _blockSizeInBytes);
 
                 sourceFileStream.Close();
 
-                threadManager.RunInParallel(compressTask);
-                threadManager.WaitAll();
+                _threadManager.RunInParallel(compressTask);
+                _threadManager.WaitAll();
 
                 Utils.WriteMetadata(_compressedFilename, fileMetadata);
             }
@@ -51,8 +53,13 @@
             finally
             {
                 sourceFileStream?.Dispose();
-                threadManager?.Dispose();
+                _threadManager?.Dispose();
             }
+        }
+
+        public void StopProcess()
+        {
+            _threadManager?.StopAll();
         }
 
         private ICanceleableTask GetTask(Stream sourceFileStream, string fileNameToCompress, string compressedFileName, CompressedFileMetadata fileMetadata, int blockSize, long initialPosition)
