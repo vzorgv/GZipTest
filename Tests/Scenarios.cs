@@ -1,8 +1,10 @@
 namespace Tests
 {
     using GZipTest.BlockArchiver;
+    using GZipTest.Metadata;
     using NUnit.Framework;
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Security.Cryptography;
@@ -21,9 +23,9 @@ namespace Tests
             using var toCompressFileStream = new FileStream(toCompressFilename, FileMode.Create);
             using var writer = new StreamWriter(toCompressFileStream);
 
-            for (var i = 0; i < 21_000; i++)
+            for (var i = 0; i < 22_000; i++)
             {
-                writer.WriteLine($"{i}-th test line written at {DateTime.Now}");
+                writer.WriteLine($"{i}-th test line written");
             }
         }
 
@@ -45,18 +47,32 @@ namespace Tests
             var expectedChecksum = CalcMD5Checksum(toCompressFilename);
             var actualChecksum = CalcMD5Checksum(decompressedFilename);
 
-            Assert.True(Enumerable.SequenceEqual<byte>(expectedChecksum, actualChecksum), "Uncompressed file not equal to original file");
+            Assert.True(Enumerable.SequenceEqual(expectedChecksum, actualChecksum), "Uncompressed file not equal to original file");
+        }
+
+        [Test]
+        public void WhenFileNotExist_Compress_Should_ThrowException()
+        {
+            var compressor = new Compressor("_" + toCompressFilename, "_" + compressedFilename, 1024);
+            var decompressor = new Decompressor(compressedFilename, "_" + decompressedFilename);
+
+            Assert.Throws<IOException>(decompressor.Run);
+        }
+
+        [Test]
+        public void WhenFileNotExist_Decompress_Should_ThrowException()
+        {
+            var compressor = new Compressor("_" + toCompressFilename, "_" + compressedFilename, 1024);
+
+            Assert.Throws<IOException>(compressor.Run);
         }
 
         private byte[] CalcMD5Checksum(string filename)
         {
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(filename))
-                {
-                    return md5.ComputeHash(stream);
-                }
-            }
+            using var md5 = MD5.Create();
+            using var stream = File.OpenRead(filename);
+
+            return md5.ComputeHash(stream);
         }
     }
 }

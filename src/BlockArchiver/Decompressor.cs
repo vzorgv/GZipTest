@@ -47,7 +47,7 @@
 
         private ThreadManager GetThreadManager()
         {
-            return new ThreadManager(new AllProcessorStrategy());
+            return new ThreadManager(new LogicalProcPerChunkCountStrategy(1));
         }
     }
 }

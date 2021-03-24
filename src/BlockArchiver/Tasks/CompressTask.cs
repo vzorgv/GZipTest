@@ -40,13 +40,13 @@
             byte[] dataBuffer = new byte[_inputStreamPositionGenerator.BlockSize];
 
             long inputPosition = 0;
-
+  
             while (_inputStreamPositionGenerator.TryGetNext(out inputPosition))
             {
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                ReadData(inputStream, dataBuffer, inputPosition);
+                dataBuffer = ReadData(inputStream, dataBuffer, inputPosition);
 
                 var compressedDataBuffer = Utils.CompressBuffer(dataBuffer);
 
@@ -57,15 +57,18 @@
             }
         }
 
-        private void ReadData(Stream inputStream, byte[] dataBuffer, long position)
+        private byte[] ReadData(Stream inputStream, byte[] dataBuffer, long position)
         {
+            byte[] data = dataBuffer;
             inputStream.Seek(position, SeekOrigin.Begin);
             var readSize = inputStream.Read(dataBuffer, 0, dataBuffer.Length);
 
             if (readSize < dataBuffer.Length)
             {
-                Array.Resize(ref dataBuffer, readSize);
+                Array.Resize(ref data, readSize);
             }
+
+            return data; 
         }
 
         private void WriteData(Stream outputStream, byte[] dataBuffer, long position)

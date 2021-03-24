@@ -20,6 +20,7 @@
             _blockSizeInBytes = blockSizeInBytes;
         }
 
+
         public void Run()
         {
             FileStream sourceFileStream = null;

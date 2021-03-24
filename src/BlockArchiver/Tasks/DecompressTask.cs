@@ -3,6 +3,8 @@
     using GZipTest.BlockGenerators;
     using GZipTest.Metadata;
     using GZipTest.TaskManagement;
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading;
 
@@ -30,7 +32,7 @@
             using var decompressedFileStream = new FileStream(_decompressedFileName, FileMode.Create, FileAccess.Write, FileShare.Write);
 
             BlockMetadata block = null;
-
+    
             while (_blockGenerator.TryGetNext(out block))
             {
                 if (cancellationToken.IsCancellationRequested)
